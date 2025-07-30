@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+*.env # Ignore .env files as they contain sensitive API keys
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+.ipynb_checkpoints # Jupyter Notebook checkpoints if you use them
+
+# IDEs
+.idea/             # IntelliJ IDEA / PyCharm
+.vscode/           # VS Code
+*.sublime-project  # Sublime Text
+*.sublime-workspace
+.DS_Store          # macOS specific
+
+# OS generated files
+.Trashes
+Thumbs.db
+
+# Database files
+*.sqlite3
+*.db
+*.db-journal
+data/              # If MongoDB stores data directly in your project folder (uncommon for production)
+
+# Sensitive data / API Keys
+# Explicitly ignore .env files
+.env
+# If you ever create temporary files with API keys or sensitive data, add them here:
+*.key
+*.pem
+*.secret
+api_keys.txt # Example: If you accidentally put keys in a text file
+*.log # Optional: if you generate log files you don't want to commit
+
+# Build/Distro
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# FastAPI specific (often handled by general Python rules, but good to be explicit)
+.uvicorn.log # If uvicorn creates specific log files
+
+# LangChain / LLM specific caches (if they generate local caches)
+.langchain_cache/
+# Sometimes LLMs create temporary large files, if you find any, add them here

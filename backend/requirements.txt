@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+motor
+pydantic
+langchain
+langgraph
+google-generativeai
+tavily-python
+serpapi
+langchain-google-genai
+langchain_community
+google-search-results
+langchain-groq
