@@ -1,0 +1,187 @@
+/* frontend/src/pages/Roadmap/Roadmap.module.css */
+
+/* --- Page States & Container --- */
+.loadingContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80vh;
+}
+.spinner {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 4px solid #e9ecef;
+    border-top-color: #228be6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.centeredMessageContainer {
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+.errorMessage, .emptyState {
+    padding: 16px 20px;
+    font-size: 1rem;
+    max-width: 600px;
+    border-radius: 4px;
+}
+.errorMessage {
+    background-color: #fff5f5;
+    color: #fa5252;
+}
+.emptyState {
+    color: #868e96;
+}
+
+/* --- Main Layout --- */
+.roadmapContainer {
+    max-width: 800px;
+    margin: 32px auto;
+    padding: 0 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.pageTitle {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+/* --- Timeline --- */
+.timeline {
+    position: relative;
+    padding-left: 30px; /* Space for the timeline line and bullet */
+}
+
+/* The vertical line of the timeline */
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 5px;
+    bottom: 5px;
+    width: 2px;
+    background-color: #e9ecef; /* Light grey line */
+}
+
+.timelineItem {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.timelineItem:last-child {
+    margin-bottom: 0;
+}
+
+/* The bullet on the timeline */
+.timelineBullet {
+    position: absolute;
+    left: -20px; /* Position it over the ::before line */
+    top: 5px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 2px solid #ced4da;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.bulletPending {
+    border-color: #ced4da;
+}
+.bulletActive {
+    border-color: #228be6;
+}
+.bulletCompleted {
+    background-color: #228be6;
+    border-color: #228be6;
+    color: #fff;
+}
+
+/* --- Week & Task Styling --- */
+.weekContent {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 16px 20px;
+}
+
+.weekTitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+}
+
+.taskList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.taskItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.taskItem:last-child {
+    border-bottom: none;
+}
+
+.taskLabel {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    flex-grow: 1;
+    margin-right: 16px;
+}
+
+.taskCheckbox {
+    width: 16px;
+    height: 16px;
+    margin-right: 12px;
+    accent-color: #228be6; /* Modern way to color checkboxes */
+    cursor: pointer;
+}
+
+.taskText {
+    color: #495057;
+    line-height: 1.5;
+}
+
+.taskLabel input:checked + .taskText {
+    text-decoration: line-through;
+    color: #adb5bd;
+}
+
+.resourceLink {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #228be6;
+    text-decoration: none;
+    white-space: nowrap; /* Prevent wrapping */
+}
+
+.resourceLink:hover {
+    text-decoration: underline;
+}
+
+.noTasks {
+    font-style: italic;
+    color: #868e96;
+}

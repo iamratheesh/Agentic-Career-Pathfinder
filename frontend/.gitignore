@@ -1,0 +1,34 @@
+# dependencies
+/node_modules
+
+# build output
+/build
+/dist
+/.out/
+/.vite/
+/.next/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+
+
+# editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# operating system files
+.DS_Store
+Thumbs.db
+
+# miscellaneous
+.pnp*
+.yarn-integrity
+coverage/

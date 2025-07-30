@@ -1,0 +1,62 @@
+.mantis-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: 4px;
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-elevation-1);
+  transition: box-shadow var(--transition-standard), transform var(--transition-standard);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.mantis-card:hover {
+  box-shadow: var(--shadow-elevation-2);
+  transform: translateY(-2px);
+}
+
+@media (prefers-color-scheme: dark) {
+  .mantis-card {
+    background-color: var(--color-surface-dark);
+    border-color: var(--color-divider-dark);
+    box-shadow: var(--shadow-elevation-1-dark);
+  }
+  
+  .mantis-card:hover {
+    box-shadow: var(--shadow-elevation-2-dark);
+  }
+}
+
+.mantis-card-title {
+  font-size: var(--font-size-h3);
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: 0.0075em;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .mantis-card-title {
+    color: var(--color-text-primary-dark);
+  }
+}
+
+.mantis-card-content {
+  flex-grow: 1;
+}
+
+.mantis-card-content p {
+  font-size: 14px;
+  line-height: 1.43;
+  letter-spacing: 0.01071em;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+  font-weight: 400;
+}
+
+@media (prefers-color-scheme: dark) {
+  .mantis-card-content p {
+    color: var(--color-text-primary-dark);
+  }
+}

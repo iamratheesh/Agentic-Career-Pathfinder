@@ -1,0 +1,145 @@
+/* frontend/src/pages/CareerTracks/CareerTracks.module.css */
+
+/* --- Page States: Loading, Error, Empty --- */
+
+/* Mimics a full page Mantine Loader */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+}
+
+.loadingSpinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 4px solid #e9ecef;
+  border-top-color: #228be6; /* Mantine's primary blue */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.centeredMessageContainer {
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Mimics Mantine Alert color="red" */
+.errorMessage {
+  background-color: #fff5f5;
+  color: #fa5252;
+  border: 1px solid #fa5252;
+  border-radius: 4px;
+  padding: 16px 20px;
+  font-size: 1rem;
+  max-width: 600px;
+}
+
+/* Mimics dim text for empty states */
+.emptyState {
+  text-align: center;
+  padding: 40px;
+  font-size: 1.1rem;
+  color: #868e96;
+}
+
+
+/* --- Main Layout & Grid --- */
+
+/* Mimics Mantine Container size="lg" */
+.careerTracksContainer {
+  max-width: 1100px;
+  margin: 32px auto;
+  padding: 0 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Mimics Mantine Title */
+.pageTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 32px;
+}
+
+/* Mimics Mantine Grid */
+.tracksGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+
+/* --- Card Styling --- */
+
+/* Mimics Mantine Card */
+.trackCard {
+  background-color: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column; /* To align button at the bottom */
+}
+
+.trackCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05) 0px 10px 15px -5px, rgba(0, 0, 0, 0.04) 0px 7px 7px -5px;
+}
+
+/* Flex-grow content to push button down */
+.cardContent {
+  flex-grow: 1;
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #228be6;
+}
+
+.cardText {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #495057;
+  margin: 0 0 12px 0;
+}
+
+.cardText strong {
+  font-weight: 600;
+  color: #343a40;
+}
+
+
+/* --- Button Styling --- */
+
+.viewRoadmapButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 38px;
+  margin-top: 16px; /* Space between content and button */
+  padding: 0 18px;
+  background-color: #e7f5ff;
+  color: #228be6;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 100ms ease;
+}
+
+.viewRoadmapButton:hover {
+  background-color: #d0ebff;
+}

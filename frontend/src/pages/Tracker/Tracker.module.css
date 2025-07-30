@@ -1,0 +1,76 @@
+/* frontend/src/pages/Tracker/Tracker.module.css */
+.trackerContainer {
+  padding: var(--spacing-lg) 0;
+}
+
+.pageTitle {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.weeksGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+  justify-content: center;
+}
+
+.weekCard {
+  display: flex;
+  flex-direction: column;
+}
+
+.taskList {
+  list-style: none;
+  padding: 0;
+}
+
+.taskItem {
+  display: flex;
+  align-items: flex-start; /* Align items to top to handle multi-line text better */
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+
+.taskCheckbox {
+  flex-shrink: 0; /* Prevent checkbox from shrinking */
+  margin-top: 3px; /* Adjust alignment with text */
+  width: 18px;
+  height: 18px;
+}
+
+.taskText {
+  flex-grow: 1;
+}
+
+.completed {
+  text-decoration: line-through;
+  color: var(--color-secondary); /* Dim completed tasks */
+}
+
+.resourceLink {
+  color: var(--color-info);
+  text-decoration: none;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  margin-left: auto; /* Push link to right */
+}
+
+.resourceLink:hover {
+  text-decoration: underline;
+}
+
+.errorMessage, .emptyState {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--color-danger);
+  padding: var(--spacing-xl);
+}
+.emptyState {
+  color: var(--color-secondary);
+}
+.emptyState Button {
+  margin-top: var(--spacing-md);
+}

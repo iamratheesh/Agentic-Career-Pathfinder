@@ -1,0 +1,27 @@
+.mantis-loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+}
+
+.mantis-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-divider);
+  border-top: 3px solid var(--color-primary);
+  border-radius: 50%;
+  animation: mantis-spin 1s linear infinite;
+}
+
+@media (prefers-color-scheme: dark) {
+  .mantis-spinner {
+    border-color: var(--color-divider-dark);
+    border-top-color: var(--color-primary-dark);
+  }
+}
+
+@keyframes mantis-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
