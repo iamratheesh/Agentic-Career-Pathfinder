@@ -1,4 +1,3 @@
-# career_pathfinder/agents/track_recommender.py
 
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -12,8 +11,6 @@ import asyncio
 
 class CareerTrackRecommenderAgent:
     def __init__(self, api_key: str, tavily_api_key: str):
-        # MODIFIED: Use an actively supported Groq model
-        # 'llama3-70b-8192' is a good, powerful choice for this type of generation + search.
         self.llm = ChatGroq(model="llama3-70b-8192", api_key=api_key)
 
         self.tavily_tool = TavilySearchResults(api_key=tavily_api_key, max_results=5)

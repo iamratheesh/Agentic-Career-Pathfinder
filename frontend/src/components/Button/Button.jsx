@@ -1,4 +1,3 @@
-// frontend/src/components/Button/Button.jsx
 import React from 'react';
 import styles from './Button.module.css';
 

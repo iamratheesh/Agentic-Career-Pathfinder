@@ -1,4 +1,3 @@
-# career_pathfinder/agents/strategy_questions.py
 
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
@@ -10,7 +9,6 @@ import asyncio
 
 class StrategyQuestionsAgent:
     def __init__(self, api_key: str):
-        # MODIFIED: Use an actively supported Groq model
         self.llm = ChatGroq(model="llama3-8b-8192", api_key=api_key)
 
         self.parser = JsonOutputParser()

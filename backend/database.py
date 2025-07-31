@@ -1,4 +1,3 @@
-# career_pathfinder/database.py
 
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import ConnectionFailure, OperationFailure

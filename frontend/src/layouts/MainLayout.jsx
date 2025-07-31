@@ -1,4 +1,3 @@
-// frontend/src/layouts/MainLayout.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './MainLayout.module.css';
@@ -10,7 +9,6 @@ const MainLayout = ({ children }) => {
         <nav className={styles.nav}>
           <Link to="/" className={styles.logo}>Career Pathfinder</Link>
           <div className={styles.navLinks}>
-            {/* You can add more navigation links here if needed later */}
             <Link to="/all-sessions" className={styles.navLink}>All Learning</Link>
           </div>
         </nav>

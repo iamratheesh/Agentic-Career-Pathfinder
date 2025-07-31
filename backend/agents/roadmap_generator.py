@@ -1,4 +1,3 @@
-# career_pathfinder/agents/roadmap_generator.py
 
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -13,7 +12,6 @@ import traceback
 
 class RoadmapGeneratorAgent:
     def __init__(self, api_key: str, tavily_api_key: str):
-        # Using a more capable Groq model for complex generation and search
         self.llm = ChatGroq(model="llama3-70b-8192", api_key=api_key, temperature=0.5, max_tokens=4096) 
 
         self.tavily_tool = TavilySearchResults(api_key=tavily_api_key, max_results=3)
@@ -61,16 +59,12 @@ class RoadmapGeneratorAgent:
         """
         json_str = None
         
-        # 1. Try to extract from a markdown JSON block (```json ... ```)
         json_match_md = re.search(r'```json\s*(\[.*?\])\s*```', text, re.DOTALL)
         if json_match_md:
             json_str = json_match_md.group(1)
             print(f"DEBUG: Found JSON in markdown block. Trying to parse: {json_str[:200]}...")
         
-        # 2. If not found in markdown, try to extract a raw JSON array
         if json_str is None:
-            # This regex is made more lenient to capture potentially truncated content
-            # It starts with an opening bracket and tries to capture till the end or till it seems complete
             json_match_raw = re.search(r'\[.*\]', text, re.DOTALL)
             if json_match_raw:
                 json_str = json_match_raw.group(0)
@@ -80,7 +74,6 @@ class RoadmapGeneratorAgent:
             try:
                 parsed_json = json.loads(json_str)
                 if isinstance(parsed_json, list):
-                    # Basic validation for roadmap structure (contains 'week' and 'tasks' list)
                     if all(isinstance(week, dict) and 'week' in week and 'tasks' in week and isinstance(week['tasks'], list) for week in parsed_json):
                         print("DEBUG: JSON parsed and validated successfully.")
                         return parsed_json

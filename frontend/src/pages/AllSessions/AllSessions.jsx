@@ -1,11 +1,9 @@
-// frontend/src/pages/AllSessions/AllSessions.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllSessions } from '../../api/api';
 import styles from './AllSessions.module.css';
 import Loader from '../../components/Loader/Loader';
 
-// A full-page loading spinner
 
 
 const AllSessions = () => {
@@ -18,7 +16,6 @@ const AllSessions = () => {
     const fetchAllSessions = async () => {
       try {
         const data = await getAllSessions();
-        // Sort sessions by creation date, newest first
         const sortedData = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setSessions(sortedData);
       } catch (err) {

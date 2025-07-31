@@ -1,18 +1,15 @@
-# career_pathfinder/main.py
 
 from fastapi import FastAPI
 from dotenv import load_dotenv
 import os
-from fastapi.middleware.cors import CORSMiddleware # NEW: Import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 
 
-# Import database connection
 from database import connect_to_mongodb, close_mongodb_connection
 
-# Import API routes
 from routes import domain, quiz, career, roadmap, tracker, summary
 
-load_dotenv() # Load environment variables from .env file
+load_dotenv() 
 
 
 
@@ -22,16 +19,14 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORRECT: CORS middleware setup
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allows all origins. For production, replace "*" with specific frontend origins, e.g., ["http://localhost:5173", "https://your-frontend.com"]
+    allow_origins=["*"], 
     allow_credentials=True, 
     allow_methods=["*"], 
     allow_headers=["*"], 
 )
 
-# Event handlers for application startup and shutdown
 @app.on_event("startup")
 async def startup_event():
     """Connects to MongoDB when the application starts."""
@@ -44,7 +39,6 @@ async def shutdown_event():
     await close_mongodb_connection()
     print("Disconnected from MongoDB")
 
-# Include routers for different API endpoints
 app.include_router(domain.router, tags=["Domain Selection"])
 app.include_router(quiz.router, tags=["Quiz & Skill Assessment"])
 app.include_router(career.router, tags=["Career Tracks"])
@@ -56,5 +50,4 @@ app.include_router(summary.router, tags=["Session Summary"])
 async def root():
     return {"message": "Welcome to the Agentic Career Pathfinder API"}
 
-# To run this file:
 # uvicorn main:app --reload

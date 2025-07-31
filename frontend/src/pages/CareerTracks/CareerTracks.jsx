@@ -1,4 +1,3 @@
-// frontend/src/pages/CareerTracks/CareerTracks.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCareerTracks } from '../../api/api';
@@ -6,7 +5,6 @@ import { useSession } from '../../hooks/useSession';
 import styles from './CareerTracks.module.css';
 import Loader from '../../components/Loader/Loader';
 
-// A full-page loading spinner
 
 
 const CareerTracks = () => {

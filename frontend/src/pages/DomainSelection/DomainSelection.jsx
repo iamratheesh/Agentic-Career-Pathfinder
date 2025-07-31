@@ -1,4 +1,3 @@
-// frontend/src/pages/DomainSelection/DomainSelection.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { initDomain } from '../../api/api';

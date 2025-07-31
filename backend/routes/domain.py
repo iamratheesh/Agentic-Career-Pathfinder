@@ -1,11 +1,10 @@
-# career_pathfinder/routes/domain.py
 
 from fastapi import APIRouter, HTTPException
 from motor.motor_asyncio import AsyncIOMotorClient
 from database import get_database
 from models import DomainInput, InitDomainResponse, SessionDocument, QuizDocument, Question
 from agents.strategy_questions import StrategyQuestionsAgent
-from config import settings # Import settings
+from config import settings 
 from bson import ObjectId
 
 router = APIRouter()
@@ -21,7 +20,6 @@ async def init_domain(domain_input: DomainInput):
     inserted_session = await db.Session.insert_one(session_doc.model_dump(by_alias=True, exclude_none=True))
     session_id = str(inserted_session.inserted_id)
 
-    # Use the Groq API key
     questions_agent = StrategyQuestionsAgent(api_key=settings.GROQ_API_KEY)
     questions_list = await questions_agent.generate_questions(domain_input.domain)
 

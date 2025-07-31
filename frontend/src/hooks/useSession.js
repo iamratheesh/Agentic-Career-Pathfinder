@@ -1,11 +1,9 @@
-// frontend/src/hooks/useSession.js
 import { useState, useEffect } from 'react';
 
 const SESSION_KEY = 'careerPathfinderSessionId';
 
 export const useSession = () => {
   const [sessionId, setSessionId] = useState(() => {
-    // Initialize from localStorage
     return localStorage.getItem(SESSION_KEY) || null;
   });
 

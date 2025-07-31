@@ -1,25 +1,21 @@
-// frontend/src/pages/Roadmap/Roadmap.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-// MODIFIED: Import updateEnrollmentStatus
 import { getRoadmap, updateTaskStatus, updateEnrollmentStatus } from '../../api/api';
 import { useSession } from '../../hooks/useSession';
 import styles from './Roadmap.module.css';
 import Loader from '../../components/Loader/Loader';
-import Button from '../../components/Button/Button'; // Import Button component
-
+import Button from '../../components/Button/Button';
 const Roadmap = () => {
     const { trackId } = useParams();
     const { sessionId } = useSession();
     const navigate = useNavigate();
 
-    // MODIFIED: Separate state for full career track details and roadmap weeks
     const [careerTrackDetails, setCareerTrackDetails] = useState(null);
     const [roadmapWeeks, setRoadmapWeeks] = useState([]);
     
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [updatingEnrollment, setUpdatingEnrollment] = useState(false); // For enrollment button loading state
+    const [updatingEnrollment, setUpdatingEnrollment] = useState(false); 
 
 
     useEffect(() => {
@@ -29,19 +25,17 @@ const Roadmap = () => {
                 setLoading(false);
                 return;
             }
-            if (!sessionId) { // Check for sessionId here for update operations
+            if (!sessionId) { 
                 setError("Session not found. Please start from the Domain Selection.");
                 setLoading(false);
-                // Optionally navigate to home if session is strictly required
                 // navigate('/');
                 return;
             }
 
             try {
-                // MODIFIED: Get the combined response
                 const response = await getRoadmap(trackId);
-                setCareerTrackDetails(response.track); // Set track details
-                setRoadmapWeeks(JSON.parse(JSON.stringify(response.roadmap))); // Deep copy roadmap weeks for local state
+                setCareerTrackDetails(response.track);
+                setRoadmapWeeks(JSON.parse(JSON.stringify(response.roadmap))); 
             } catch (err) {
                 console.error('Error fetching roadmap:', err);
                 setError('Failed to load roadmap. ' + (err.response?.data?.detail || err.message));
@@ -59,12 +53,11 @@ const Roadmap = () => {
             return;
         }
         
-        // Optimistic UI update
-        const updatedRoadmapData = JSON.parse(JSON.stringify(roadmapWeeks)); // Deep copy from roadmapWeeks
+        const updatedRoadmapData = JSON.parse(JSON.stringify(roadmapWeeks)); 
         const currentTask = updatedRoadmapData[weekIndex].tasks[taskIndex];
         const newStatus = !currentTask.isCompleted;
         currentTask.isCompleted = newStatus;
-        setRoadmapWeeks(updatedRoadmapData); // Update local state immediately
+        setRoadmapWeeks(updatedRoadmapData); 
 
         const taskUpdatePayload = {
             week: updatedRoadmapData[weekIndex].week,
@@ -78,13 +71,11 @@ const Roadmap = () => {
         } catch (err) {
             console.error('Error updating task status:', err);
             setError('Failed to update task status. Please try again. ' + (err.response?.data?.detail || err.message));
-            // Revert UI change if API call fails
             currentTask.isCompleted = !newStatus;
             setRoadmapWeeks(JSON.parse(JSON.stringify(updatedRoadmapData)));
         }
     };
 
-    // NEW: Handler for enrolling/unenrolling in this track
     const handleEnrollToggle = async () => {
         if (!sessionId || !trackId) {
             setError("Cannot enroll: Session or Track ID is missing.");
@@ -97,7 +88,6 @@ const Roadmap = () => {
             const newEnrollmentStatus = !careerTrackDetails.isEnrolled;
             const updatedTrack = await updateEnrollmentStatus(trackId, newEnrollmentStatus);
             
-            // Update the local state for careerTrackDetails with the new status
             setCareerTrackDetails(prevDetails => ({
                 ...prevDetails,
                 isEnrolled: updatedTrack.isEnrolled

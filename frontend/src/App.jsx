@@ -1,4 +1,3 @@
-// frontend/src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
@@ -8,7 +7,7 @@ import CareerTracks from './pages/CareerTracks/CareerTracks';
 import Roadmap from './pages/Roadmap/Roadmap';
 import Tracker from './pages/Tracker/Tracker';
 import SessionSummary from './pages/SessionSummary/SessionSummary';
-import AllSessions from './pages/AllSessions/AllSessions'; // NEW: Import AllSessions
+import AllSessions from './pages/AllSessions/AllSessions'; 
 import NotFound from './pages/NotFound/NotFound';
 
 function App() {
@@ -22,7 +21,7 @@ function App() {
           <Route path="/roadmap/:trackId" element={<Roadmap />} />
           <Route path="/tracker" element={<Tracker />} />
           <Route path="/session-summary/:sessionId?" element={<SessionSummary />} />
-          <Route path="/all-sessions" element={<AllSessions />} /> {/* NEW: Add route for all sessions */}
+          <Route path="/all-sessions" element={<AllSessions />} /> 
           <Route path="*" element={<NotFound />} />
         </Routes>
       </MainLayout>

@@ -1,8 +1,5 @@
-/* frontend/src/pages/CareerTracks/CareerTracks.module.css */
 
-/* --- Page States: Loading, Error, Empty --- */
 
-/* Mimics a full page Mantine Loader */
 .loadingContainer {
   display: flex;
   justify-content: center;

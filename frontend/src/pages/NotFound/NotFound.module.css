@@ -1,4 +1,3 @@
-/* frontend/src/pages/NotFound/NotFound.module.css */
 .notFoundContainer {
   display: flex;
   flex-direction: column;
@@ -32,6 +31,6 @@
 }
 
 .homeLink:hover {
-  background-color: #0056b3; /* Darker primary */
-  text-decoration: none; /* Remove underline on hover for buttons */
+  background-color: #0056b3; 
+  text-decoration: none; 
 }

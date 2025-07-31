@@ -1,4 +1,3 @@
-// frontend/src/pages/Quiz/Quiz.jsx
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { submitAnswers } from '../../api/api';
@@ -22,10 +21,7 @@ const Quiz = () => {
     if (location.state?.questions && location.state?.quizId) {
       setQuestions(location.state.questions);
       setCurrentAnswers(Array(location.state.questions.length).fill(''));
-    } else {
-      // If no questions, this component will render the empty state message.
-      // A redirect could also be placed here: navigate('/');
-    }
+    } 
   }, [location.state, navigate]);
 
   const handleAnswerChange = (index, value) => {

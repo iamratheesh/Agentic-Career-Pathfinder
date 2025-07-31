@@ -1,4 +1,3 @@
-# career_pathfinder/agents/level_detector.py
 
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
@@ -7,8 +6,6 @@ from typing import List, Dict
 
 class LevelDetectorAgent:
     def __init__(self, api_key: str):
-        # MODIFIED: Use an actively supported Groq model
-        # 'llama3-8b-8192' is a good, fast choice.
         self.llm = ChatGroq(model="llama3-8b-8192", api_key=api_key)
         self.prompt = ChatPromptTemplate.from_messages([
             ("system", "You are an AI that classifies a student's skill level based on their quiz answers."),

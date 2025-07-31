@@ -1,14 +1,11 @@
-# career_pathfinder/models.py
 
 from pydantic import BaseModel, Field, BeforeValidator, HttpUrl
 from typing import List, Optional, Annotated
 from datetime import datetime
 from bson import ObjectId
 
-# Custom type for handling ObjectId in Pydantic V2
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
-# --- Request Models ---
 
 class DomainInput(BaseModel):
     domain: str = Field(..., description="User's chosen domain of interest, e.g., 'Frontend Developer'")
@@ -26,12 +23,11 @@ class TaskUpdate(BaseModel):
     week: int
     task: str
     status: bool
-    resourceLink: Optional[str] = None # For manual updates to resource link
+    resourceLink: Optional[str] = None
 
-class EnrollTrackUpdate(BaseModel): # Already exists
+class EnrollTrackUpdate(BaseModel):
     isEnrolled: bool
 
-# --- Response Models ---
 
 class Question(BaseModel):
     id: int
@@ -43,35 +39,34 @@ class InitDomainResponse(BaseModel):
     questions: List[Question]
 
 class LevelPredictionResponse(BaseModel):
-    level: str # e.g., "Beginner", "Intermediate", "Advanced"
-    nextStep: str # e.g., "career-track-recommendation"
+    level: str 
+    nextStep: str
 
-class CareerTrack(BaseModel): # Basic CareerTrack for LLM output and general use
+class CareerTrack(BaseModel): 
     title: str
     avgSalary: str
     skills: List[str]
     tools: List[str]
     growth: str
-    isEnrolled: bool = False # Already exists
+    isEnrolled: bool = False 
 
 class RoadmapTask(BaseModel):
     task: str
     isCompleted: bool = False
-    resourceLink: Optional[str] = None # CHANGED TO STRING TYPE in previous fixes
+    resourceLink: Optional[str] = None 
 
 class RoadmapWeek(BaseModel):
     week: int
     tasks: List[RoadmapTask]
 
-# Model to represent a career track with its optional roadmap (for response)
-class FullCareerTrack(BaseModel): # Already exists
+class FullCareerTrack(BaseModel): 
     trackId: Optional[PyObjectId] = Field(alias="_id", default=None)
     title: str
     avgSalary: str
     skills: List[str]
     tools: List[str]
     growth: str
-    isEnrolled: bool = False # Already exists
+    isEnrolled: bool = False 
     roadmap: Optional[List[RoadmapWeek]] = None
 
     class Config:
@@ -81,16 +76,14 @@ class FullCareerTrack(BaseModel): # Already exists
             ObjectId: str
         }
 
-# NEW: Response model for a single Career Track with its full roadmap
 class SingleTrackWithRoadmapResponse(BaseModel):
     track: FullCareerTrack
-    roadmap: List[RoadmapWeek] # This will be the actual list of weeks
+    roadmap: List[RoadmapWeek] 
 
     class Config:
-        arbitrary_types_allowed = True # Needed for nesting
+        arbitrary_types_allowed = True 
 
-# The main response model for the session summary
-class SessionFullDataResponse(BaseModel): # Already exists
+class SessionFullDataResponse(BaseModel): 
     sessionId: str
     domain: str
     level: Optional[str] = None
@@ -105,8 +98,7 @@ class SessionFullDataResponse(BaseModel): # Already exists
             ObjectId: str
         }
 
-# Response model for just basic session details
-class SessionDetailsResponse(BaseModel): # Already exists
+class SessionDetailsResponse(BaseModel): 
     sessionId: str
     domain: str
     level: Optional[str] = None
@@ -121,9 +113,8 @@ class SessionDetailsResponse(BaseModel): # Already exists
         }
 
 
-# --- MongoDB Document Models (for internal use, not directly for API response unless needed) ---
 
-class SessionDocument(BaseModel): # Already exists
+class SessionDocument(BaseModel): 
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
     domain: str
     level: Optional[str] = None
@@ -134,7 +125,7 @@ class SessionDocument(BaseModel): # Already exists
         arbitrary_types_allowed = True
         json_encoders = {datetime: lambda dt: dt.isoformat(), ObjectId: str}
 
-class CareerTrackDocument(BaseModel): # Already exists
+class CareerTrackDocument(BaseModel): 
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
     sessionId: str
     title: str
@@ -142,7 +133,7 @@ class CareerTrackDocument(BaseModel): # Already exists
     skills: List[str]
     tools: List[str]
     growth: str
-    isEnrolled: bool = False # Already exists
+    isEnrolled: bool = False 
 
     class Config:
         populate_by_name = True
@@ -151,7 +142,7 @@ class CareerTrackDocument(BaseModel): # Already exists
             ObjectId: str
         }
 
-class QuizDocument(BaseModel): # Already exists
+class QuizDocument(BaseModel): 
     sessionId: str
     questions: List[dict]
     answers: List[QuizAnswer] = []
@@ -159,7 +150,7 @@ class QuizDocument(BaseModel): # Already exists
     class Config:
         arbitrary_types_allowed = True
 
-class RoadmapDocument(BaseModel): # Already exists
+class RoadmapDocument(BaseModel): 
     sessionId: str
     trackId: str
     weeks: List[RoadmapWeek]

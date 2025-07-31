@@ -1,6 +1,4 @@
-/* frontend/src/pages/SessionSummary/SessionSummary.module.css */
 
-/* --- Page States & Container --- */
 .loadingContainer {
     display: flex;
     justify-content: center;
@@ -49,7 +47,6 @@
     margin-bottom: 24px;
 }
 
-/* --- Main Layout --- */
 .summaryContainer {
     max-width: 1100px;
     margin: 32px auto;
@@ -72,11 +69,10 @@
     padding-bottom: 16px;
 }
 
-/* Mimics a primary info Card */
 .sessionCard {
     background-color: #f8f9fa;
     border: 1px solid #e9ecef;
-    border-left: 5px solid #228be6; /* Accent border */
+    border-left: 5px solid #228be6; 
     border-radius: 8px;
     padding: 24px;
     margin-bottom: 40px;
@@ -96,7 +92,6 @@
     color: #343a40;
 }
 
-/* --- Career Tracks Grid & Cards --- */
 .tracksGrid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -114,10 +109,9 @@
     justify-content: space-between;
 }
 
-/* --- Enrolled Track Card Styling --- */
 .enrolledCard {
-    border-left: 5px solid #51cf66; /* Green accent for enrolled tracks */
-    background-color: #f8fff9; /* Light green background */
+    border-left: 5px solid #51cf66;
+    background-color: #f8fff9; 
 }
 
 .cardTitle {
@@ -130,7 +124,6 @@
     gap: 8px;
 }
 
-/* --- Enrolled Tag --- */
 .enrolledTag {
     background-color: #51cf66;
     color: #ffffff;
@@ -154,7 +147,6 @@
     color: #343a40;
 }
 
-/* --- Roadmap Preview within Cards --- */
 .roadmapSection {
     margin-top: 16px;
     border-top: 1px solid #f1f3f5;
@@ -202,7 +194,6 @@
     color: #adb5bd;
 }
 
-/* --- Button Styles --- */
 .viewFullRoadmapButton {
     display: flex;
     justify-content: center;
@@ -250,7 +241,6 @@
     color: #ffffff;
 }
 
-/* --- Actions --- */
 .actions {
     text-align: center;
     margin-top: 48px;
@@ -283,7 +273,6 @@
     background-color: #1c7ed6;
 }
 
-/* For sections with no content */
 .emptySection {
     font-style: italic;
     color: #868e96;
@@ -299,7 +288,7 @@
     align-items: center;
     width: 100%;
     height: 38px;
-    margin-top: 24px; /* Space between content and button */
+    margin-top: 24px; 
     padding: 0 18px;
     background-color: #e7f5ff;
     color: #228be6;
@@ -315,7 +304,6 @@
     background-color: #d0ebff;
 }
 
-/* --- Responsive Design --- */
 @media (max-width: 768px) {
     .summaryContainer {
         margin: 16px auto;

@@ -1,4 +1,3 @@
-# career_pathfinder/routes/roadmap.py
 
 from fastapi import APIRouter, HTTPException
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -20,21 +19,15 @@ async def get_roadmap(track_id: str):
     """
     db = get_database()
 
-    # 1. Fetch the Career Track Document
     career_track_doc_data = await db.CareerTrack.find_one({"_id": ObjectId(track_id)})
     if not career_track_doc_data:
         raise HTTPException(status_code=404, detail="Career track not found.")
     
-    # MODIFIED: Instantiate CareerTrackDocument here to access sessionId
-    # This also ensures proper Pydantic validation for the fetched raw data
     career_track_db_model = CareerTrackDocument(**career_track_doc_data)
     
-    # Now create the FullCareerTrack for the *response* using the same data
-    career_track_response_model = FullCareerTrack(**career_track_doc_data) # This will be part of the final response
+    career_track_response_model = FullCareerTrack(**career_track_doc_data)
 
-    # Get session details for domain and level (needed for roadmap generation if not existing)
-    # Access sessionId from the CareerTrackDocument instance
-    session_id = str(career_track_db_model.sessionId) # <-- FIXED LINE: Access from career_track_db_model
+    session_id = str(career_track_db_model.sessionId) 
     session_doc = await db.Session.find_one({"_id": ObjectId(session_id)})
     if not session_doc:
         raise HTTPException(status_code=404, detail="Session not found for this track.")
@@ -44,7 +37,6 @@ async def get_roadmap(track_id: str):
     domain = session_doc["domain"]
     level = session_doc["level"]
 
-    # 2. Check if a roadmap already exists for this trackId
     existing_roadmap_doc_data = await db.Roadmap.find_one({"trackId": track_id})
     
     roadmap_weeks: List[RoadmapWeek] = []
@@ -61,7 +53,6 @@ async def get_roadmap(track_id: str):
                 ))
             roadmap_weeks.append(RoadmapWeek(week=week_data.week, tasks=tasks))
     else:
-        # 3. Generate Roadmap if not existing
         roadmap_agent = RoadmapGeneratorAgent(
             api_key=settings.GROQ_API_KEY,
             tavily_api_key=settings.TAVILY_API_KEY
@@ -89,12 +80,10 @@ async def get_roadmap(track_id: str):
                 ))
             roadmap_weeks.append(RoadmapWeek(week=week_data['week'], tasks=tasks_with_status))
 
-        # Store the newly generated roadmap
         roadmap_doc = RoadmapDocument(sessionId=session_id, trackId=track_id, weeks=roadmap_weeks)
         await db.Roadmap.insert_one(roadmap_doc.model_dump(by_alias=True, exclude_none=True))
 
-    # Return the combined response
     return SingleTrackWithRoadmapResponse(
-        track=career_track_response_model, # Use the model intended for the response
+        track=career_track_response_model,
         roadmap=roadmap_weeks
     )
