@@ -4,9 +4,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { submitAnswers } from '../../api/api';
 import { useSession } from '../../hooks/useSession';
 import styles from './Quiz.module.css';
+import Loader from '../../components/Loader/Loader';
 
-// Simple spinner component styled via the CSS module
-const LoadingSpinner = () => <div className={styles.loadingSpinner}></div>;
+
 
 const Quiz = () => {
   const location = useLocation();
@@ -101,7 +101,7 @@ const Quiz = () => {
         {error && <div className={styles.errorText}>{error}</div>}
 
         <button onClick={handleSubmitQuiz} disabled={loading} className={styles.submitButton}>
-          {loading && <LoadingSpinner />}
+          {loading && <Loader />}
           <span>{loading ? 'Submitting...' : 'Submit Quiz'}</span>
         </button>
       </div>

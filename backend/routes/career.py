@@ -3,8 +3,8 @@
 from fastapi import APIRouter, HTTPException
 from motor.motor_asyncio import AsyncIOMotorClient
 from database import get_database
-# Ensure FullCareerTrack is imported correctly
-from models import CareerTrack, SessionDocument, CareerTrackDocument, FullCareerTrack # Import FullCareerTrack
+# MODIFIED: Import EnrollTrackUpdate
+from models import CareerTrack, SessionDocument, CareerTrackDocument, FullCareerTrack, EnrollTrackUpdate
 from agents.track_recommender import CareerTrackRecommenderAgent
 from config import settings
 from typing import List
@@ -12,7 +12,6 @@ from bson import ObjectId
 
 router = APIRouter()
 
-# Response model is List[FullCareerTrack]
 @router.get("/career-tracks/{session_id}", response_model=List[FullCareerTrack])
 async def get_career_tracks(session_id: str):
     """
@@ -42,26 +41,56 @@ async def get_career_tracks(session_id: str):
     if not llm_recommended_tracks:
         raise HTTPException(status_code=500, detail="Failed to generate any career tracks. Agent returned empty list.")
 
+    # Store recommended tracks. For upsert, MongoDB creates _id if new.
     for track_data in llm_recommended_tracks:
-        # For insertion, omit 'id' so MongoDB generates '_id'.
-        # CareerTrackDocument now expects 'id' when *fetched*, but not strictly on initial creation if omitted.
+        # Create a Pydantic model instance from the track data.
+        # isEnrolled defaults to False for new tracks.
         track_doc = CareerTrackDocument(sessionId=session_id, **track_data)
         
         await db.CareerTrack.update_one(
-            {"sessionId": session_id, "title": track_data["title"]},
+            {"sessionId": session_id, "title": track_data["title"]}, # Filter by session and title
             {"$set": track_doc.model_dump(by_alias=True, exclude_none=True)},
-            upsert=True
+            upsert=True # If no matching document, insert a new one
         )
 
-    # *** CRITICAL FIX: Fetch the career tracks from the DB after saving/upserting ***
-    # This is where the '_id' will be reliably present.
+    # Fetch the career tracks from the DB after saving/upserting to get their _id and current isEnrolled status
     fetched_career_tracks_cursor = db.CareerTrack.find({"sessionId": session_id})
     fetched_career_tracks_data = await fetched_career_tracks_cursor.to_list(length=None)
 
     response_tracks = []
     for track_doc_data in fetched_career_tracks_data:
-        # Pass the raw dictionary from MongoDB (which contains '_id') directly to FullCareerTrack
-        # FullCareerTrack's Field(alias="_id") will map it to 'trackId'.
         response_tracks.append(FullCareerTrack(**track_doc_data))
 
     return response_tracks
+
+# NEW: Endpoint to update the enrollment status of a career track
+@router.patch("/career-tracks/{track_id}/enroll", response_model=FullCareerTrack)
+async def update_career_track_enrollment(track_id: str, enroll_update: EnrollTrackUpdate):
+    """
+    Updates the enrollment status of a specific career track.
+    """
+    db = get_database()
+
+    # Find the career track document
+    existing_track = await db.CareerTrack.find_one({"_id": ObjectId(track_id)})
+    if not existing_track:
+        raise HTTPException(status_code=404, detail="Career track not found.")
+
+    # Update only the isEnrolled field
+    result = await db.CareerTrack.update_one(
+        {"_id": ObjectId(track_id)},
+        {"$set": {"isEnrolled": enroll_update.isEnrolled}}
+    )
+
+    if result.modified_count == 0:
+        # If no modification, either doc not found (already checked) or status was already the same
+        # Fetch it again to return current state even if not modified
+        updated_track_data = await db.CareerTrack.find_one({"_id": ObjectId(track_id)})
+        if not updated_track_data: # Should not happen if it existed before
+             raise HTTPException(status_code=404, detail="Career track not found after update attempt.")
+        return FullCareerTrack(**updated_track_data)
+    
+    # Fetch the updated document to return its current state
+    updated_track_data = await db.CareerTrack.find_one({"_id": ObjectId(track_id)})
+    
+    return FullCareerTrack(**updated_track_data)

@@ -3,107 +3,98 @@
 from fastapi import APIRouter, HTTPException
 from motor.motor_asyncio import AsyncIOMotorClient
 from database import get_database
-# Removed HttpUrl from this import line as it's not needed for direct type hinting in routes now
-from models import RoadmapWeek, RoadmapDocument, SessionDocument, CareerTrackDocument, RoadmapTask
+from models import RoadmapWeek, RoadmapDocument, SessionDocument, CareerTrackDocument, RoadmapTask, FullCareerTrack, SingleTrackWithRoadmapResponse
 from agents.roadmap_generator import RoadmapGeneratorAgent
 from config import settings
 from typing import List
 from bson import ObjectId
-import json # Import json for pretty printing debug output
+import json
+import traceback
 
 router = APIRouter()
 
-@router.get("/roadmap/{track_id}", response_model=List[RoadmapWeek])
+@router.get("/roadmap/{track_id}", response_model=SingleTrackWithRoadmapResponse)
 async def get_roadmap(track_id: str):
     """
-    Generates and returns a weekly roadmap for a specific career track.
+    Generates and returns a specific career track's details along with its weekly roadmap.
     """
     db = get_database()
 
-    career_track_doc = await db.CareerTrack.find_one({"_id": ObjectId(track_id)})
-    if not career_track_doc:
+    # 1. Fetch the Career Track Document
+    career_track_doc_data = await db.CareerTrack.find_one({"_id": ObjectId(track_id)})
+    if not career_track_doc_data:
         raise HTTPException(status_code=404, detail="Career track not found.")
+    
+    # MODIFIED: Instantiate CareerTrackDocument here to access sessionId
+    # This also ensures proper Pydantic validation for the fetched raw data
+    career_track_db_model = CareerTrackDocument(**career_track_doc_data)
+    
+    # Now create the FullCareerTrack for the *response* using the same data
+    career_track_response_model = FullCareerTrack(**career_track_doc_data) # This will be part of the final response
 
-    session_id = str(career_track_doc["sessionId"])
+    # Get session details for domain and level (needed for roadmap generation if not existing)
+    # Access sessionId from the CareerTrackDocument instance
+    session_id = str(career_track_db_model.sessionId) # <-- FIXED LINE: Access from career_track_db_model
     session_doc = await db.Session.find_one({"_id": ObjectId(session_id)})
     if not session_doc:
         raise HTTPException(status_code=404, detail="Session not found for this track.")
     if not session_doc.get("level"):
-        raise HTTPException(status_code=400, detail="User level not yet determined.")
+        raise HTTPException(status_code=400, detail="User level not yet determined. Complete the quiz first.")
 
     domain = session_doc["domain"]
     level = session_doc["level"]
 
-    # Check if a roadmap already exists for this trackId
-    existing_roadmap = await db.Roadmap.find_one({"trackId": track_id})
-    if existing_roadmap:
-        formatted_existing_weeks = []
-        for week_data in existing_roadmap["weeks"]:
-            tasks = []
-            for task_item in week_data["tasks"]:
-                # Ensure resourceLink is explicitly a string or None for RoadmapTask
-                tasks.append(RoadmapTask(
-                    task=task_item.get('task'),
-                    isCompleted=task_item.get('isCompleted', False),
-                    resourceLink=str(task_item['resourceLink']) if task_item.get('resourceLink') else None
-                ))
-            formatted_existing_weeks.append(RoadmapWeek(week=week_data["week"], tasks=tasks))
-        return formatted_existing_weeks
-
-
-    # Prompt Groq for roadmap generation
-    roadmap_agent = RoadmapGeneratorAgent(
-        api_key=settings.GROQ_API_KEY,
-        tavily_api_key=settings.TAVILY_API_KEY
-    )
+    # 2. Check if a roadmap already exists for this trackId
+    existing_roadmap_doc_data = await db.Roadmap.find_one({"trackId": track_id})
     
-    try:
-        generated_weeks_data = await roadmap_agent.generate_roadmap(domain, level)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate roadmap due to agent error: {e}")
+    roadmap_weeks: List[RoadmapWeek] = []
 
+    if existing_roadmap_doc_data:
+        roadmap_doc = RoadmapDocument(**existing_roadmap_doc_data)
+        for week_data in roadmap_doc.weeks:
+            tasks = []
+            for task_item in week_data.tasks:
+                tasks.append(RoadmapTask(
+                    task=task_item.get('task') if isinstance(task_item, dict) else task_item.task,
+                    isCompleted=task_item.get('isCompleted', False) if isinstance(task_item, dict) else task_item.isCompleted,
+                    resourceLink=task_item.get('resourceLink') if isinstance(task_item, dict) else task_item.resourceLink
+                ))
+            roadmap_weeks.append(RoadmapWeek(week=week_data.week, tasks=tasks))
+    else:
+        # 3. Generate Roadmap if not existing
+        roadmap_agent = RoadmapGeneratorAgent(
+            api_key=settings.GROQ_API_KEY,
+            tavily_api_key=settings.TAVILY_API_KEY
+        )
+        
+        try:
+            generated_weeks_data = await roadmap_agent.generate_roadmap(domain, level)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to generate roadmap due to agent error: {e}")
 
-    if not generated_weeks_data:
-        raise HTTPException(status_code=500, detail="Failed to generate roadmap. Agent returned empty list or invalid format.")
+        if not generated_weeks_data:
+            raise HTTPException(status_code=500, detail="Failed to generate roadmap. Agent returned empty list or invalid format.")
 
-    # Convert tasks from agent output (dict) to RoadmapTask object
-    formatted_weeks = []
-    for week_data in generated_weeks_data:
-        tasks_with_status = []
-        for task_item in week_data['tasks']:
-            # *** CRITICAL FIX HERE: Explicitly convert to string for resourceLink ***
-            # This ensures that even if HttpUrl objects somehow exist in task_item.get('resourceLink'),
-            # they are converted to strings before being passed to RoadmapTask.
-            # If task_item.get('resourceLink') is already a string or None, it remains so.
-            resource_link_value = task_item.get('resourceLink')
-            if resource_link_value is not None:
-                resource_link_value = str(resource_link_value) # Convert to string
-            
-            # DEBUGGING ADDITION: Print type of the value being used before creating RoadmapTask
-            print(f"DEBUG: ResourceLink value before RoadmapTask creation for task '{task_item.get('task')}': {type(resource_link_value)}, Value: {resource_link_value}")
+        for week_data in generated_weeks_data:
+            tasks_with_status = []
+            for task_item in week_data['tasks']:
+                resource_link_value = task_item.get('resourceLink')
+                if resource_link_value is not None:
+                    resource_link_value = str(resource_link_value)
+                
+                tasks_with_status.append(RoadmapTask(
+                    task=task_item.get('task'),
+                    isCompleted=False,
+                    resourceLink=resource_link_value
+                ))
+            roadmap_weeks.append(RoadmapWeek(week=week_data['week'], tasks=tasks_with_status))
 
-            tasks_with_status.append(RoadmapTask(
-                task=task_item.get('task'),
-                isCompleted=False,
-                resourceLink=resource_link_value # Pass the string/None value
-            ))
-        formatted_weeks.append(RoadmapWeek(week=week_data['week'], tasks=tasks_with_status))
+        # Store the newly generated roadmap
+        roadmap_doc = RoadmapDocument(sessionId=session_id, trackId=track_id, weeks=roadmap_weeks)
+        await db.Roadmap.insert_one(roadmap_doc.model_dump(by_alias=True, exclude_none=True))
 
-    # Store in Roadmap collection
-    roadmap_doc = RoadmapDocument(sessionId=session_id, trackId=track_id, weeks=formatted_weeks)
-
-    # *** DEBUGGING ADDITION: Print type from Pydantic model instance just before model_dump ***
-    for week_debug in roadmap_doc.weeks:
-        for task_debug in week_debug.tasks:
-            print(f"DEBUG: Type of resourceLink IN RoadmapTask Pydantic model before model_dump for task '{task_debug.task}': {type(task_debug.resourceLink)}, Value: {task_debug.resourceLink}")
-
-
-    # *** DEBUGGING ADDITION: Print the document before insertion ***
-    debug_dict_to_insert = roadmap_doc.model_dump(by_alias=True, exclude_none=True)
-    print("\nDEBUG: Final document structure for MongoDB insertion:")
-    print(json.dumps(debug_dict_to_insert, indent=2)) # Pretty print the dictionary for easy inspection
-    print("--- END DEBUG PRINT ---\n")
-
-    await db.Roadmap.insert_one(debug_dict_to_insert)
-
-    return formatted_weeks
+    # Return the combined response
+    return SingleTrackWithRoadmapResponse(
+        track=career_track_response_model, # Use the model intended for the response
+        roadmap=roadmap_weeks
+    )

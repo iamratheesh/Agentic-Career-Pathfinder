@@ -4,9 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { initDomain } from '../../api/api';
 import { useSession } from '../../hooks/useSession';
 import styles from './DomainSelection.module.css';
+import Loader from '../../components/Loader/Loader';
 
-// A simple spinner component also styled via the CSS module
-const LoadingSpinner = () => <div className={styles.loadingSpinner}></div>;
 
 const DomainSelection = () => {
   const [domain, setDomain] = useState('');
@@ -65,7 +64,7 @@ const DomainSelection = () => {
           )}
 
           <button type="submit" className={styles.button} disabled={loading}>
-            {loading && <LoadingSpinner />}
+            {loading && <Loader />}
             <span>{loading ? 'Starting...' : 'Start Guidance'}</span>
           </button>
         </form>

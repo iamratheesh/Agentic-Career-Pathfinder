@@ -3,10 +3,9 @@
 from fastapi import APIRouter, HTTPException
 from motor.motor_asyncio import AsyncIOMotorClient
 from database import get_database
-# MODIFIED: Ensure SessionDetailsResponse is imported
 from models import SessionFullDataResponse, SessionDetailsResponse, SessionDocument, CareerTrackDocument, RoadmapDocument, FullCareerTrack, RoadmapWeek, RoadmapTask
 from bson import ObjectId
-from typing import List
+from typing import List, Optional # Ensure Optional is imported for type hints
 
 router = APIRouter()
 
@@ -27,18 +26,24 @@ async def get_session_summary(session_id: str):
     session_details = SessionDocument(**session_doc_data)
 
     # 2. Fetch all Career Tracks for this session
+    # These 'track_data' dictionaries from MongoDB *will* contain '_id' and 'isEnrolled'
     career_tracks_cursor = db.CareerTrack.find({"sessionId": session_id})
-    career_tracks_data = await career_tracks_cursor.to_list(length=None)
+    career_tracks_data_from_db = await career_tracks_cursor.to_list(length=None)
 
     full_career_tracks: List[FullCareerTrack] = []
 
-    # 3. For each Career Track, fetch its Roadmap
-    for track_data in career_tracks_data:
-        career_track_doc = CareerTrackDocument(**track_data)
+    # 3. For each Career Track, fetch its Roadmap and consolidate data
+    for track_data_from_db in career_tracks_data_from_db:
+        # Instead of creating CareerTrackDocument here and manually passing fields,
+        # create FullCareerTrack directly from the fetched dictionary.
+        # FullCareerTrack is designed to accept MongoDB's '_id' (aliased to 'trackId')
+        # and it also has 'isEnrolled', which will be populated from 'track_data_from_db'.
+        full_career_track_instance = FullCareerTrack(**track_data_from_db) # This correctly populates all fields including isEnrolled
         
         roadmap_for_track: Optional[List[RoadmapWeek]] = None
         
-        roadmap_doc_data = await db.Roadmap.find_one({"trackId": str(career_track_doc.id)})
+        # Check if a roadmap exists for this specific trackId (using the trackId from FullCareerTrack instance)
+        roadmap_doc_data = await db.Roadmap.find_one({"trackId": full_career_track_instance.trackId})
         
         if roadmap_doc_data:
             roadmap_doc = RoadmapDocument(**roadmap_doc_data)
@@ -55,15 +60,10 @@ async def get_session_summary(session_id: str):
                 formatted_weeks.append(RoadmapWeek(week=week_data.week, tasks=tasks_in_week))
             roadmap_for_track = formatted_weeks
         
-        full_career_tracks.append(FullCareerTrack(
-            trackId=str(career_track_doc.id),
-            title=career_track_doc.title,
-            avgSalary=career_track_doc.avgSalary,
-            skills=career_track_doc.skills,
-            tools=career_track_doc.tools,
-            growth=career_track_doc.growth,
-            roadmap=roadmap_for_track
-        ))
+        # Assign the found roadmap to the full_career_track_instance
+        full_career_track_instance.roadmap = roadmap_for_track
+        
+        full_career_tracks.append(full_career_track_instance)
 
     return SessionFullDataResponse(
         sessionId=str(session_details.id),
@@ -102,9 +102,8 @@ async def get_all_sessions():
     """
     db = get_database()
 
-    # Fetch all documents from the Session collection
     sessions_cursor = db.Session.find({})
-    all_sessions_data = await sessions_cursor.to_list(length=None) # Get all results
+    all_sessions_data = await sessions_cursor.to_list(length=None)
 
     response_sessions = []
     for session_doc_data in all_sessions_data:

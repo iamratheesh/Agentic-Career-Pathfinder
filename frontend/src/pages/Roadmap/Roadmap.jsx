@@ -1,23 +1,26 @@
 // frontend/src/pages/Roadmap/Roadmap.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { getRoadmap } from '../../api/api';
+import { useParams, useNavigate } from 'react-router-dom';
+// MODIFIED: Import updateEnrollmentStatus
+import { getRoadmap, updateTaskStatus, updateEnrollmentStatus } from '../../api/api';
+import { useSession } from '../../hooks/useSession';
 import styles from './Roadmap.module.css';
-
-const FullPageSpinner = () => (
-    <div className={styles.loadingContainer}>
-        <div className={styles.spinner}></div>
-    </div>
-);
+import Loader from '../../components/Loader/Loader';
+import Button from '../../components/Button/Button'; // Import Button component
 
 const Roadmap = () => {
     const { trackId } = useParams();
-    const [roadmap, setRoadmap] = useState([]);
+    const { sessionId } = useSession();
+    const navigate = useNavigate();
+
+    // MODIFIED: Separate state for full career track details and roadmap weeks
+    const [careerTrackDetails, setCareerTrackDetails] = useState(null);
+    const [roadmapWeeks, setRoadmapWeeks] = useState([]);
+    
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [updatingEnrollment, setUpdatingEnrollment] = useState(false); // For enrollment button loading state
 
-    // This state would be updated by user interaction in a full app
-    const [tasksStatus, setTasksStatus] = useState({});
 
     useEffect(() => {
         const fetchRoadmap = async () => {
@@ -26,17 +29,19 @@ const Roadmap = () => {
                 setLoading(false);
                 return;
             }
+            if (!sessionId) { // Check for sessionId here for update operations
+                setError("Session not found. Please start from the Domain Selection.");
+                setLoading(false);
+                // Optionally navigate to home if session is strictly required
+                // navigate('/');
+                return;
+            }
+
             try {
-                const data = await getRoadmap(trackId);
-                setRoadmap(data);
-                // Initialize local task completion state from fetched data
-                const initialStatus = {};
-                data.forEach((week, weekIndex) => {
-                    week.tasks.forEach((task, taskIndex) => {
-                        initialStatus[`${weekIndex}-${taskIndex}`] = task.isCompleted;
-                    });
-                });
-                setTasksStatus(initialStatus);
+                // MODIFIED: Get the combined response
+                const response = await getRoadmap(trackId);
+                setCareerTrackDetails(response.track); // Set track details
+                setRoadmapWeeks(JSON.parse(JSON.stringify(response.roadmap))); // Deep copy roadmap weeks for local state
             } catch (err) {
                 console.error('Error fetching roadmap:', err);
                 setError('Failed to load roadmap. ' + (err.response?.data?.detail || err.message));
@@ -46,27 +51,76 @@ const Roadmap = () => {
         };
 
         fetchRoadmap();
-    }, [trackId]);
+    }, [trackId, sessionId, navigate]);
 
-    const handleCheckboxChange = (weekIndex, taskIndex) => {
-        // This is where you would also call an API to save the state
-        const key = `${weekIndex}-${taskIndex}`;
-        setTasksStatus(prev => ({ ...prev, [key]: !prev[key] }));
+    const handleCheckboxChange = async (weekIndex, taskIndex) => {
+        if (!sessionId) {
+            setError("Cannot update task: Session ID is missing. Please start a new session.");
+            return;
+        }
+        
+        // Optimistic UI update
+        const updatedRoadmapData = JSON.parse(JSON.stringify(roadmapWeeks)); // Deep copy from roadmapWeeks
+        const currentTask = updatedRoadmapData[weekIndex].tasks[taskIndex];
+        const newStatus = !currentTask.isCompleted;
+        currentTask.isCompleted = newStatus;
+        setRoadmapWeeks(updatedRoadmapData); // Update local state immediately
+
+        const taskUpdatePayload = {
+            week: updatedRoadmapData[weekIndex].week,
+            task: currentTask.task,
+            status: newStatus,
+            resourceLink: currentTask.resourceLink
+        };
+
+        try {
+            await updateTaskStatus(sessionId, taskUpdatePayload);
+        } catch (err) {
+            console.error('Error updating task status:', err);
+            setError('Failed to update task status. Please try again. ' + (err.response?.data?.detail || err.message));
+            // Revert UI change if API call fails
+            currentTask.isCompleted = !newStatus;
+            setRoadmapWeeks(JSON.parse(JSON.stringify(updatedRoadmapData)));
+        }
     };
 
-    const getWeekStatus = (week, weekIndex) => {
+    // NEW: Handler for enrolling/unenrolling in this track
+    const handleEnrollToggle = async () => {
+        if (!sessionId || !trackId) {
+            setError("Cannot enroll: Session or Track ID is missing.");
+            return;
+        }
+        setUpdatingEnrollment(true);
+        setError(null);
+
+        try {
+            const newEnrollmentStatus = !careerTrackDetails.isEnrolled;
+            const updatedTrack = await updateEnrollmentStatus(trackId, newEnrollmentStatus);
+            
+            // Update the local state for careerTrackDetails with the new status
+            setCareerTrackDetails(prevDetails => ({
+                ...prevDetails,
+                isEnrolled: updatedTrack.isEnrolled
+            }));
+
+        } catch (err) {
+            console.error('Error updating enrollment status:', err);
+            setError('Failed to update enrollment status. ' + (err.response?.data?.detail || err.message));
+        } finally {
+            setUpdatingEnrollment(false);
+        }
+    };
+
+
+    const getWeekStatus = (week) => {
         const totalTasks = week.tasks.length;
         if (totalTasks === 0) return 'pending';
         
-        const completedTasks = week.tasks.filter((task, taskIndex) => tasksStatus[`${weekIndex}-${taskIndex}`]).length;
+        const completedTasks = week.tasks.filter(task => task.isCompleted).length;
 
         if (completedTasks === totalTasks) return 'completed';
         if (completedTasks > 0) return 'active';
         return 'pending';
-    };
-
-    const getBulletContent = (status) => {
-        return status === 'completed' ? '✓' : '';
     };
 
     const getBulletClass = (status) => {
@@ -76,31 +130,62 @@ const Roadmap = () => {
     };
 
     if (loading) {
-        return <FullPageSpinner />;
+        return <Loader />;
     }
 
     if (error) {
         return <div className={styles.centeredMessageContainer}><div className={styles.errorMessage}>⚠️ {error}</div></div>;
     }
 
-    if (roadmap.length === 0) {
-        return <div className={styles.centeredMessageContainer}><div className={styles.emptyState}>No roadmap generated for this track yet.</div></div>;
+    if (!careerTrackDetails) {
+        return <div className={styles.centeredMessageContainer}><div className={styles.emptyState}>No track details found.</div></div>;
+    }
+
+    if (roadmapWeeks.length === 0) {
+        return (
+            <div className={styles.roadmapContainer}>
+                <h2 className={styles.pageTitle}>Roadmap for: {careerTrackDetails.title} 🗺️</h2>
+                
+                <div className={styles.enrollmentStatus}>
+                    <span>Current Status: <strong className={`${careerTrackDetails.isEnrolled ? styles.isEnrolled : styles.isNotEnrolled}`}>{careerTrackDetails.isEnrolled ? 'Enrolled' : 'Not Enrolled'}</strong></span>
+                    <Button
+                        onClick={handleEnrollToggle}
+                        disabled={updatingEnrollment}
+                        variant={careerTrackDetails.isEnrolled ? 'secondary' : 'primary'}
+                        className={styles.enrollButton}
+                    >
+                        {updatingEnrollment ? 'Updating...' : (careerTrackDetails.isEnrolled ? 'Unenroll' : 'Enroll')}
+                    </Button>
+                </div>
+                <div className={styles.centeredMessageContainer}><div className={styles.emptyState}>No roadmap generated for this track yet.</div></div>
+            </div>
+        );
     }
 
     return (
         <div className={styles.roadmapContainer}>
-            <h2 className={styles.pageTitle}>Your Personalized Roadmap 🗺️</h2>
+            <h2 className={styles.pageTitle}>Roadmap for: {careerTrackDetails.title} 🗺️</h2>
+            {!careerTrackDetails.isEnrolled && (
+ <div className={styles.enrollmentStatus}>
+                <span>Current Status: <strong>{careerTrackDetails.isEnrolled ? 'Enrolled' : 'Not Enrolled'}</strong></span>
+                <Button
+                    onClick={handleEnrollToggle}
+                    disabled={updatingEnrollment}
+                    variant={careerTrackDetails.isEnrolled ? 'secondary' : 'primary'}
+                    className={styles.enrollButton}
+                >
+                    {updatingEnrollment ? 'Updating...' : (careerTrackDetails.isEnrolled ? 'Unenroll' : 'Enroll')}
+                </Button>
+            </div>
+            )}
+           
             
             <div className={styles.timeline}>
-                {roadmap.map((week, weekIndex) => {
-                    const status = getWeekStatus(week, weekIndex);
+                {roadmapWeeks.map((week, weekIndex) => {
+                    const status = getWeekStatus(week);
                     
                     return (
-                        <div key={week.week} className={styles.timelineItem}>
-                            <div className={`${styles.timelineBullet} ${getBulletClass(status)}`}>
-                                {getBulletContent(status)}
-                            </div>
-                            
+                        <div key={week.week} className={`${styles.timelineItem} ${getBulletClass(status)} ${status === "completed" ? styles.markCompleted : ''}`}>
                             <div className={styles.weekContent}>
                                 <h3 className={styles.weekTitle}>Week {week.week}</h3>
                                 
@@ -111,11 +196,13 @@ const Roadmap = () => {
                                                 <label className={styles.taskLabel}>
                                                     <input
                                                         type="checkbox"
-                                                        checked={tasksStatus[`${weekIndex}-${taskIndex}`] || false}
+                                                        checked={task.isCompleted || false}
                                                         onChange={() => handleCheckboxChange(weekIndex, taskIndex)}
                                                         className={styles.taskCheckbox}
                                                     />
-                                                    <span className={styles.taskText}>{task.task}</span>
+                                                    <span className={`${styles.taskText} ${task.isCompleted ? styles.taskCompletedText : ''}`}>
+                                                        {task.task}
+                                                    </span>
                                                 </label>
                                                 
                                                 {task.resourceLink && (

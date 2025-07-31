@@ -16,7 +16,7 @@ export const initDomain = async (domain) => {
 };
 
 export const submitAnswers = async (sessionId, quizId, answers) => {
-  const response = await api.post('/submit-answers', { sessionId, quizId, answers });
+  const response = await api.post('/submit-answer', { sessionId, quizId, answers });
   return response.data;
 };
 
@@ -48,5 +48,10 @@ export const getAllSessions = async () => {
 
 export const updateTaskStatus = async (sessionId, taskUpdateData) => {
   const response = await api.patch(`/tracker/${sessionId}`, taskUpdateData);
+  return response.data;
+};
+
+export const updateEnrollmentStatus = async (trackId, isEnrolled) => {
+  const response = await api.patch(`/career-tracks/${trackId}/enroll`, { isEnrolled });
   return response.data;
 };

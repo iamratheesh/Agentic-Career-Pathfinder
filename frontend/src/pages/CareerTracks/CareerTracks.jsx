@@ -4,13 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { getCareerTracks } from '../../api/api';
 import { useSession } from '../../hooks/useSession';
 import styles from './CareerTracks.module.css';
+import Loader from '../../components/Loader/Loader';
 
 // A full-page loading spinner
-const FullPageSpinner = () => (
-  <div className={styles.loadingContainer}>
-    <div className={styles.loadingSpinner}></div>
-  </div>
-);
+
 
 const CareerTracks = () => {
   const [tracks, setTracks] = useState([]);
@@ -45,7 +42,7 @@ const CareerTracks = () => {
   };
 
   if (loading) {
-    return <FullPageSpinner />;
+    return <Loader />;
   }
 
   if (error) {

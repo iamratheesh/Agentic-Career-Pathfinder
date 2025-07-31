@@ -3,13 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllSessions } from '../../api/api';
 import styles from './AllSessions.module.css';
+import Loader from '../../components/Loader/Loader';
 
 // A full-page loading spinner
-const FullPageSpinner = () => (
-  <div className={styles.loadingContainer}>
-    <div className={styles.loadingSpinner}></div>
-  </div>
-);
+
 
 const AllSessions = () => {
   const [sessions, setSessions] = useState([]);
@@ -39,7 +36,7 @@ const AllSessions = () => {
   };
 
   if (loading) {
-    return <FullPageSpinner />;
+    return <Loader />;
   }
 
   if (error) {
@@ -48,7 +45,7 @@ const AllSessions = () => {
 
   return (
     <div className={styles.allSessionsContainer}>
-      <h2 className={styles.pageTitle}>All Previous Sessions 📚</h2>
+      <h2 className={styles.pageTitle}>All Previous Learning 📚</h2>
 
       {sessions.length === 0 ? (
         <div className={styles.centeredMessageContainer}>

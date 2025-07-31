@@ -101,6 +101,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 24px;
+    justify-content: space-between;
 }
 
 .trackCard {
@@ -110,6 +111,13 @@
     padding: 24px;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+}
+
+/* --- Enrolled Track Card Styling --- */
+.enrolledCard {
+    border-left: 5px solid #51cf66; /* Green accent for enrolled tracks */
+    background-color: #f8fff9; /* Light green background */
 }
 
 .cardTitle {
@@ -117,6 +125,21 @@
     font-weight: 600;
     margin: 0 0 16px 0;
     color: #228be6;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* --- Enrolled Tag --- */
+.enrolledTag {
+    background-color: #51cf66;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .trackCard p {
@@ -179,12 +202,64 @@
     color: #adb5bd;
 }
 
+/* --- Button Styles --- */
+.viewFullRoadmapButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 38px;
+    margin-top: 16px;
+    padding: 0 18px;
+    background-color: #228be6;
+    color: #ffffff;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 100ms ease;
+}
+
+.viewFullRoadmapButton:hover {
+    background-color: #1c7ed6;
+}
+
+.generateRoadmapButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 38px;
+    margin-top: 16px;
+    padding: 0 18px;
+    background-color: #e7f5ff;
+    color: #228be6;
+    border: 1px solid #228be6;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 100ms ease;
+}
+
+.generateRoadmapButton:hover {
+    background-color: #228be6;
+    color: #ffffff;
+}
+
 /* --- Actions --- */
 .actions {
     text-align: center;
     margin-top: 48px;
     padding-top: 32px;
     border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
 .actionButton {
@@ -216,4 +291,55 @@
     padding: 20px;
     border-radius: 4px;
     text-align: center;
+}
+
+.viewSummaryButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 38px;
+    margin-top: 24px; /* Space between content and button */
+    padding: 0 18px;
+    background-color: #e7f5ff;
+    color: #228be6;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 100ms ease;
+}
+
+.viewSummaryButton:hover {
+    background-color: #d0ebff;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+    .summaryContainer {
+        margin: 16px auto;
+        padding: 0 16px;
+    }
+    
+    .tracksGrid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .actionButton {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .sectionTitle {
+        font-size: 1.5rem;
+        margin-top: 32px;
+        margin-bottom: 16px;
+    }
 }

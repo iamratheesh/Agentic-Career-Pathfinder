@@ -26,7 +26,10 @@ class TaskUpdate(BaseModel):
     week: int
     task: str
     status: bool
-    resourceLink: Optional[str] = None
+    resourceLink: Optional[str] = None # For manual updates to resource link
+
+class EnrollTrackUpdate(BaseModel): # Already exists
+    isEnrolled: bool
 
 # --- Response Models ---
 
@@ -40,8 +43,8 @@ class InitDomainResponse(BaseModel):
     questions: List[Question]
 
 class LevelPredictionResponse(BaseModel):
-    level: str
-    nextStep: str
+    level: str # e.g., "Beginner", "Intermediate", "Advanced"
+    nextStep: str # e.g., "career-track-recommendation"
 
 class CareerTrack(BaseModel): # Basic CareerTrack for LLM output and general use
     title: str
@@ -49,24 +52,26 @@ class CareerTrack(BaseModel): # Basic CareerTrack for LLM output and general use
     skills: List[str]
     tools: List[str]
     growth: str
+    isEnrolled: bool = False # Already exists
 
 class RoadmapTask(BaseModel):
     task: str
     isCompleted: bool = False
-    resourceLink: Optional[str] = None
+    resourceLink: Optional[str] = None # CHANGED TO STRING TYPE in previous fixes
 
 class RoadmapWeek(BaseModel):
     week: int
     tasks: List[RoadmapTask]
 
 # Model to represent a career track with its optional roadmap (for response)
-class FullCareerTrack(BaseModel):
+class FullCareerTrack(BaseModel): # Already exists
     trackId: Optional[PyObjectId] = Field(alias="_id", default=None)
     title: str
     avgSalary: str
     skills: List[str]
     tools: List[str]
     growth: str
+    isEnrolled: bool = False # Already exists
     roadmap: Optional[List[RoadmapWeek]] = None
 
     class Config:
@@ -76,8 +81,16 @@ class FullCareerTrack(BaseModel):
             ObjectId: str
         }
 
-# The main response model for the session summary (already correct for its purpose)
-class SessionFullDataResponse(BaseModel):
+# NEW: Response model for a single Career Track with its full roadmap
+class SingleTrackWithRoadmapResponse(BaseModel):
+    track: FullCareerTrack
+    roadmap: List[RoadmapWeek] # This will be the actual list of weeks
+
+    class Config:
+        arbitrary_types_allowed = True # Needed for nesting
+
+# The main response model for the session summary
+class SessionFullDataResponse(BaseModel): # Already exists
     sessionId: str
     domain: str
     level: Optional[str] = None
@@ -92,8 +105,8 @@ class SessionFullDataResponse(BaseModel):
             ObjectId: str
         }
 
-# NEW: Response model for just basic session details
-class SessionDetailsResponse(BaseModel):
+# Response model for just basic session details
+class SessionDetailsResponse(BaseModel): # Already exists
     sessionId: str
     domain: str
     level: Optional[str] = None
@@ -110,7 +123,7 @@ class SessionDetailsResponse(BaseModel):
 
 # --- MongoDB Document Models (for internal use, not directly for API response unless needed) ---
 
-class SessionDocument(BaseModel):
+class SessionDocument(BaseModel): # Already exists
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
     domain: str
     level: Optional[str] = None
@@ -121,7 +134,7 @@ class SessionDocument(BaseModel):
         arbitrary_types_allowed = True
         json_encoders = {datetime: lambda dt: dt.isoformat(), ObjectId: str}
 
-class CareerTrackDocument(BaseModel):
+class CareerTrackDocument(BaseModel): # Already exists
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
     sessionId: str
     title: str
@@ -129,6 +142,7 @@ class CareerTrackDocument(BaseModel):
     skills: List[str]
     tools: List[str]
     growth: str
+    isEnrolled: bool = False # Already exists
 
     class Config:
         populate_by_name = True
@@ -137,7 +151,7 @@ class CareerTrackDocument(BaseModel):
             ObjectId: str
         }
 
-class QuizDocument(BaseModel):
+class QuizDocument(BaseModel): # Already exists
     sessionId: str
     questions: List[dict]
     answers: List[QuizAnswer] = []
@@ -145,7 +159,7 @@ class QuizDocument(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-class RoadmapDocument(BaseModel):
+class RoadmapDocument(BaseModel): # Already exists
     sessionId: str
     trackId: str
     weeks: List[RoadmapWeek]

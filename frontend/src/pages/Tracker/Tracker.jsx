@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Using navigate for potential redirect
 import { getSessionSummary, updateTaskStatus } from '../../api/api';
 import { useSession } from '../../hooks/useSession';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
+import Loader from '../../components/Loader/Loader';
 import Card from '../../components/Card/Card';
 import Button from '../../components/Button/Button'; // For a 'Select Track' button or similar
 import styles from './Tracker.module.css';
@@ -75,7 +75,7 @@ const Tracker = () => {
   };
 
   if (loading) {
-    return <LoadingSpinner />;
+    return <Loader />;
   }
 
   if (error) {
@@ -91,8 +91,6 @@ const Tracker = () => {
     );
   }
 
-  // Assuming for simplicity that the tracker tracks the first recommended career track's roadmap.
-  // In a multi-track scenario, you might need to select which track's roadmap to show.
   const activeRoadmap = sessionData.careerTracks[0].roadmap;
   const activeTrackTitle = sessionData.careerTracks[0].title;
 
