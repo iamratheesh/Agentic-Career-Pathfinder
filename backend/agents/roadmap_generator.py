@@ -1,4 +1,3 @@
-
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_community.tools.tavily_search import TavilySearchResults
@@ -12,34 +11,34 @@ import traceback
 
 class RoadmapGeneratorAgent:
     def __init__(self, api_key: str, tavily_api_key: str):
-        self.llm = ChatGroq(model="llama3-70b-8192", api_key=api_key, temperature=0.5, max_tokens=4096) 
+        self.llm = ChatGroq(model="llama-3.3-70b-versatile", api_key=api_key, temperature=0.5, max_tokens=4096) 
 
         self.tavily_tool = TavilySearchResults(api_key=tavily_api_key, max_results=3)
         self.tools = [self.tavily_tool]
 
         self.prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are an AI specialized in creating structured learning roadmaps. For each task, you MUST try to find a relevant, high-quality online resource link (e.g., a documentation page, a reputable tutorial, an official guide). Use the provided search tool for this.
-            Your final answer MUST be a complete and perfectly valid JSON array of objects, where each object has a 'week' (integer) and 'tasks' (array of task objects). Each task object MUST have 'task' (string) and 'resourceLink' (string, or null if no relevant link is found after searching).
+            ("system", """You are an AI specialized in creating structured learning roadmaps. For each task, you MUST try to find a relevant, high-quality online resource link. Prioritize finding **YouTube video tutorials or playlists** for each task. Use the provided search tool to find these resources.
+            Your final answer MUST be a complete and perfectly valid JSON array of objects, where each object has a 'week' (integer) and 'tasks' (array of task objects). Each task object MUST have 'task' (string) and 'resourceLink' (string, or null if no relevant YouTube link is found after searching).
             IMPORTANT: Do NOT include ANY extra text, preamble, postamble, or markdown backticks around the JSON. The JSON should be the ABSOLUTE ONLY content in your final answer. Ensure all commas and brackets are correctly placed and the array is fully closed.
             Example:
             [
                 {{
                     "week": 1,
                     "tasks": [
-                        {{"task": "Learn HTML/CSS basics", "resourceLink": "https://developer.mozilla.org/en-US/docs/Web/HTML"}},
-                        {{"task": "Understand CSS Flexbox", "resourceLink": "https://css-tricks.com/snippets/css/a-guide-to-flexbox/"}}
+                        {{"task": "Learn HTML/CSS basics", "resourceLink": "https://www.youtube.com/watch?v=k_lG5k36fB4"}},
+                        {{"task": "Understand CSS Flexbox", "resourceLink": "https://www.youtube.com/watch?v=33Qh3z12o-1"}}
                     ]
                 }},
                 {{
                     "week": 2,
                     "tasks": [
-                        {{"task": "Master JavaScript ES6+", "resourceLink": "https://javascript.info/"}},
+                        {{"task": "Master JavaScript ES6+", "resourceLink": "https://www.youtube.com/playlist?list=PL_XQdYtU1d3_E5L6yU3wU8y0a0e_2x2x2"}},
                         {{"task": "Build DOM projects", "resourceLink": null}}
                     ]
                 }}
             ]
             """),
-            ("human", """Generate a 12-week learning roadmap for job readiness in 3 months based on the following: {input}. For each task, search for and provide one highly relevant online resource link."""),
+            ("human", """Generate a 12-week learning roadmap for job readiness in 3 months based on the following: {input}. For each task, search for and provide one highly relevant **YouTube tutorial or playlist link** as a resource."""),
             MessagesPlaceholder(variable_name="agent_scratchpad")
         ])
 
@@ -65,9 +64,9 @@ class RoadmapGeneratorAgent:
             print(f"DEBUG: Found JSON in markdown block. Trying to parse: {json_str[:200]}...")
         
         if json_str is None:
-            json_match_raw = re.search(r'\[.*\]', text, re.DOTALL)
-            if json_match_raw:
-                json_str = json_match_raw.group(0)
+            json_str_match = re.search(r'\[.*\]', text, re.DOTALL)
+            if json_str_match:
+                json_str = json_str_match.group(0)
                 print(f"DEBUG: Found raw JSON array. Trying to parse: {json_str[:200]}...")
         
         if json_str:

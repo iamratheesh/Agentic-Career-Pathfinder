@@ -11,7 +11,7 @@ import asyncio
 
 class CareerTrackRecommenderAgent:
     def __init__(self, api_key: str, tavily_api_key: str):
-        self.llm = ChatGroq(model="llama3-70b-8192", api_key=api_key)
+        self.llm = ChatGroq(model="llama-3.3-70b-versatile", api_key=api_key)
 
         self.tavily_tool = TavilySearchResults(api_key=tavily_api_key, max_results=5)
         self.tools = [self.tavily_tool]

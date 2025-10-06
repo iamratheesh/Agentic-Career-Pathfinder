@@ -1,29 +1,42 @@
-
+import json
+import re
+import asyncio
+from typing import List, Dict, Optional
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
-import json
-from typing import List, Dict, Optional
-import re
-import asyncio
 
 class StrategyQuestionsAgent:
-    def __init__(self, api_key: str):
-        self.llm = ChatGroq(model="llama3-8b-8192", api_key=api_key)
-
+    def __init__(self, api_key: str, resume_file: str = "resume.txt"):
+        self.llm = ChatGroq(model="llama-3.3-70b-versatile", api_key=api_key)
         self.parser = JsonOutputParser()
+        self.resume_data = self._load_resume(resume_file)
+        
         self.prompt = ChatPromptTemplate.from_messages([
-            ("system", "You are an expert career guidance AI. Your task is to generate assessment questions. Provide the output as a JSON array of objects, where each object has an 'id' (integer, starting from 1) and 'question' (string). Do NOT include markdown backticks or extra text."),
+            ("system", """You are an expert career guidance AI. Your task is to generate assessment questions tailored to a candidate's resume and a specified domain. Use the provided resume data to create relevant, in-depth strategy questions that assess the candidate's expertise in the domain. Provide the output as a JSON array of objects, where each object has an 'id' (integer, starting from 1) and 'question' (string). Do NOT include markdown backticks or extra text."""),
             ("human", """Generate 10 strategy questions to assess a student's depth in {domain}.
-            Example:
-            [
-                {{"id": 1, "question": "Question 1"}},
-                {{"id": 2, "question": "Question 2"}}
-            ]
-            Domain: {domain}
-            """)
+Resume data: {resume_data}
+Example:
+[
+    {{"id": 1, "question": "Question 1"}},
+    {{"id": 2, "question": "Question 2"}}
+]
+Domain: {domain}
+""")
         ])
         self.chain = self.prompt | self.llm
+
+    def _load_resume(self, resume_file: str) -> str:
+        try:
+            with open(resume_file, 'r', encoding='utf-8') as file:
+                resume_content = file.read()
+            return resume_content
+        except FileNotFoundError:
+            print(f"Error: Resume file '{resume_file}' not found.")
+            return "Resume data unavailable."
+        except Exception as e:
+            print(f"Error reading resume file: {e}")
+            return "Resume data unavailable."
 
     def _extract_and_parse_json(self, text: str) -> Optional[List[Dict]]:
         json_match = re.search(r'```json\s*(\[.*?\])\s*```', text, re.DOTALL)
@@ -54,7 +67,10 @@ class StrategyQuestionsAgent:
         max_retries = 3
         for attempt in range(max_retries):
             try:
-                raw_response = await self.chain.ainvoke({"domain": domain})
+                raw_response = await self.chain.ainvoke({
+                    "domain": domain,
+                    "resume_data": self.resume_data
+                })
                 
                 if hasattr(raw_response, 'content'):
                     response_content = raw_response.content

@@ -20,7 +20,7 @@ async def init_domain(domain_input: DomainInput):
     inserted_session = await db.Session.insert_one(session_doc.model_dump(by_alias=True, exclude_none=True))
     session_id = str(inserted_session.inserted_id)
 
-    questions_agent = StrategyQuestionsAgent(api_key=settings.GROQ_API_KEY)
+    questions_agent = StrategyQuestionsAgent(api_key=settings.GROQ_API_KEY ,resume_file="data/resume.txt")
     questions_list = await questions_agent.generate_questions(domain_input.domain)
 
     quiz_doc = QuizDocument(sessionId=session_id, questions=questions_list)

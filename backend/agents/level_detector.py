@@ -6,7 +6,7 @@ from typing import List, Dict
 
 class LevelDetectorAgent:
     def __init__(self, api_key: str):
-        self.llm = ChatGroq(model="llama3-8b-8192", api_key=api_key)
+        self.llm = ChatGroq(model="llama-3.3-70b-versatile", api_key=api_key)
         self.prompt = ChatPromptTemplate.from_messages([
             ("system", "You are an AI that classifies a student's skill level based on their quiz answers."),
             ("human", """Based on these 10 QA pairs, classify the user as Beginner / Intermediate / Advanced.

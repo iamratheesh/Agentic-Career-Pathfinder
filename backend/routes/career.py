@@ -57,6 +57,8 @@ async def get_career_tracks(session_id: str):
 
     return response_tracks
 
+
+
 @router.patch("/career-tracks/{track_id}/enroll", response_model=FullCareerTrack)
 async def update_career_track_enrollment(track_id: str, enroll_update: EnrollTrackUpdate):
     """
