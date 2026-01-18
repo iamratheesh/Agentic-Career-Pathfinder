@@ -1,13 +1,14 @@
 import json
 import re
 import asyncio
+import os
 from typing import List, Dict, Optional
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 
 class StrategyQuestionsAgent:
-    def __init__(self, api_key: str, resume_file: str = "resume.txt"):
+    def __init__(self, api_key: str, resume_file: str = "data/resume.txt"):
         self.llm = ChatGroq(model="llama-3.3-70b-versatile", api_key=api_key)
         self.parser = JsonOutputParser()
         self.resume_data = self._load_resume(resume_file)
@@ -28,11 +29,15 @@ Domain: {domain}
 
     def _load_resume(self, resume_file: str) -> str:
         try:
+            # Debug: Print current working directory to help troubleshoot
+            print(f"Current working directory: {os.getcwd()}")
+            print(f"Attempting to load resume file: {os.path.abspath(resume_file)}")
+            
             with open(resume_file, 'r', encoding='utf-8') as file:
                 resume_content = file.read()
             return resume_content
         except FileNotFoundError:
-            print(f"Error: Resume file '{resume_file}' not found.")
+            print(f"Error: Resume file '{resume_file}' not found. Please ensure the file exists in the 'data' directory or provide the correct path.")
             return "Resume data unavailable."
         except Exception as e:
             print(f"Error reading resume file: {e}")
